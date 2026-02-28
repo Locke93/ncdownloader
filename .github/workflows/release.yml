@@ -1,0 +1,59 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ncdownloader
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install PHP dependencies
+        working-directory: ncdownloader
+        run: composer install --prefer-dist --no-dev
+
+      - name: Install JS dependencies and build
+        working-directory: ncdownloader
+        run: |
+          npm install
+          npm run build
+
+      - name: Build appstore package
+        working-directory: ncdownloader
+        run: make appstore
+
+      - name: Rename package
+        run: cp ncdownloader/build/artifacts/appstore/ncdownloader.tar.gz ncdownloader-release.tar.gz
+
+      - name: Create Release and upload assets
+        run: |
+          gh release delete "${{ github.ref_name }}" --yes 2>/dev/null || true
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            --target "${{ github.sha }}" \
+            ncdownloader-release.tar.gz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
