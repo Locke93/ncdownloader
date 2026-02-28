@@ -1,6 +1,7 @@
 /node_modules
 .sass-cache
 vendor
+composer.lock
 build.sh
 test.php
 js/app*
