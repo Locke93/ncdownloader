@@ -216,13 +216,12 @@ class Helper
         if (!function_exists($function_name)) {
             return false;
         }
-        $ini = \OC::$server->getIniWrapper();
-        $disabled = explode(',', $ini->get('disable_functions') ?: '');
+        $disabled = explode(',', ini_get('disable_functions') ?: '');
         $disabled = array_map('trim', $disabled);
         if (in_array($function_name, $disabled)) {
             return false;
         }
-        $disabled = explode(',', $ini->get('suhosin.executor.func.blacklist') ?: '');
+        $disabled = explode(',', ini_get('suhosin.executor.func.blacklist') ?: '');
         $disabled = array_map('trim', $disabled);
         if (in_array($function_name, $disabled)) {
             return false;
@@ -232,7 +231,7 @@ class Helper
 
     public static function findBinaryPath($program, $default = null)
     {
-        $memcache = \OC::$server->getMemCacheFactory()->createDistributed('findBinaryPath');
+        $memcache = \OC::$server->get(\OCP\ICacheFactory::class)->createDistributed('findBinaryPath');
         if ($memcache->hasKey($program)) {
             return $memcache->get($program);
         }
@@ -382,7 +381,7 @@ class Helper
     public static function getSearchSites(): array
     {
         $key = 'searchSites';
-        $memcache = \OC::$server->getMemCacheFactory()->createDistributed($key);
+        $memcache = \OC::$server->get(\OCP\ICacheFactory::class)->createDistributed($key);
         if ($memcache->hasKey($key)) {
             $sites = $memcache->get($key);
         } else {

@@ -13,6 +13,7 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 //use OCP\Files\IRootFolder;
+use OCP\IGroupManager;
 use OCP\IL10N;
 use OCP\IRequest;
 use OCP\Util;
@@ -36,7 +37,7 @@ class MainController extends Controller
     private $ytdl;
     private $accessDenied;
 
-    public function __construct($appName, IRequest $request, $UserId, IL10N $IL10N, Aria2 $aria2, Ytdl $ytdl)
+    public function __construct($appName, IRequest $request, $UserId, IL10N $IL10N, Aria2 $aria2, Ytdl $ytdl, IGroupManager $groupManager)
     {
 
         parent::__construct($appName, $request);
@@ -50,7 +51,7 @@ class MainController extends Controller
         $this->dbconn = new DbHelper();
         $this->counters = new Counters($aria2, $this->dbconn, $UserId);
         $this->ytdl = $ytdl;
-        $this->isAdmin = \OC_User::isAdminUser($this->uid);
+        $this->isAdmin = $groupManager->isAdmin($this->uid);
         $this->hideError = Helper::getSettings("ncd_hide_errors", false);
         $this->disable_bt_nonadmin = Helper::getAdminSettings("ncd_disable_bt");
         $this->accessDenied = $this->l10n->t("Sorry,only admin users can download files via BT!");

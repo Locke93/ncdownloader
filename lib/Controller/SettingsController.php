@@ -6,6 +6,7 @@ use OCA\NCDownloader\Tools\Helper;
 use OCA\NCDownloader\Db\Settings;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\IGroupManager;
 use OCP\IRequest;
 
 class SettingsController extends Controller
@@ -17,11 +18,13 @@ class SettingsController extends Controller
     private $config;
     private $uid;
     private $settings;
-    public function __construct($AppName, IRequest $Request, $uid) //, IL10N $L10N)
+    private $groupManager;
+    public function __construct($AppName, IRequest $Request, $uid, IGroupManager $groupManager) //, IL10N $L10N)
 
     {
         parent::__construct($AppName, $Request);
         $this->uid = $uid;
+        $this->groupManager = $groupManager;
         //$this->L10N = $L10N;
         $this->settings = new Settings($uid);
         //$this->config = \OC::$server->getAppConfig();
@@ -96,7 +99,7 @@ class SettingsController extends Controller
     public function saveCustomAria2()
     {
         $noAria2Settings = (bool) Helper::getAdminSettings("disallow_aria2_settings");
-        if ($noAria2Settings && !\OC_User::isAdminUser($this->uid)) {
+        if ($noAria2Settings && !$this->groupManager->isAdmin($this->uid)) {
             $resp = ["error" => "forbidden", "status" => false];
             return new JSONResponse($resp);
         }

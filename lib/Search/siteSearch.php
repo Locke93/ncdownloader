@@ -4,8 +4,8 @@ namespace OCA\NCDownloader\Search;
 
 require __DIR__ . "/../../vendor/autoload.php";
 
-use OCP\AppFramework\QueryException;
-use OCP\IServerContainer;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpClient\Exception\ClientException;
 
 class siteSearch
@@ -15,15 +15,15 @@ class siteSearch
     private $defaultSite = __NAMESPACE__ . '\Sites\TPB';
     public function __construct()
     {
-        $this->container = \OC::$server->get(IServerContainer::class);
+        $this->container = \OC::$server->get(ContainerInterface::class);
         $this->site = __NAMESPACE__ . '\Sites\TPB';
     }
     public function go($keyword): array
     {
         try {
-            $siteInst = $this->container->query($this->site);
-        } catch (QueryException $e) {
-            $siteInst = $this->container->query($this->defaultSite);
+            $siteInst = $this->container->get($this->site);
+        } catch (ContainerExceptionInterface $e) {
+            $siteInst = $this->container->get($this->defaultSite);
         } catch (ClientException $e) {
             return ['error' => $e->getMessage()];
         }
